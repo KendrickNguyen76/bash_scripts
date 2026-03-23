@@ -4,11 +4,12 @@
 curr_directory=$(pwd)
 curr_directory+="/.local"
 
-mkdir $curr_directory
-
 # Prompt user for input of the project name
 echo "Enter project name: "
 read project_name
+
+# Make the .local directory
+mkdir $curr_directory
 
 # Setting up setup.sh function
 setupFile() {
