@@ -3,10 +3,24 @@
 # Script for setting up ruby on Debian-based Linux systems
 # Written on Linux Mint 22.3 (uses Ubuntu Noble)
 
-# variable representing user consent to using this script
+# Variables
 USER_CONSENT=false
+HAS_RUBY=false
 
 main () {
+    check_for_ruby
+
+    if $HAS_RUBY; then
+        echo "You already have ruby installed;"
+        ruby -v
+        echo
+        echo "You may want to continue with this script in order to get other important tools for ruby development."
+        echo
+    else
+        echo "Ruby is not installed. Feel free to continue."
+        echo
+    fi
+
     confirm_user_install
 
     if $USER_CONSENT; then
@@ -42,7 +56,32 @@ main () {
         echo
         install_rbenv
     fi
+    
+    echo
 
+    # Install latest ruby version using rbenv
+    echo "Installing ruby version 4.0.2 (Latest stable version as of March 2026)"
+    rbenv install 4.0.2
+    
+    # Confirm installation
+    echo
+    echo "Confirming that installation was a success..."
+    rbenv versions
+    echo
+    
+    # Exit and let the user of any other steps:
+    echo "Ruby is now set-up on your machine!"
+    echo "Make sure to set a global version on your computer using 'rbenv global'"
+    echo "For more information on rbenv, check here: https://github.com/rbenv/rbenv?tab=readme-ov-file"
+}
+
+# Functions for checking
+check_for_ruby () {
+    if command -v ruby >/dev/null 2>&1; then
+        HAS_RUBY=true
+    else
+        HAS_RUBY=false
+    fi
 }
 
 confirm_user_install () {
@@ -66,6 +105,7 @@ confirm_user_install () {
     done
 }
 
+# Installation functions
 install_home_brew () {
     # Based off of instructions from this website: https://brew.sh/
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -101,4 +141,5 @@ install_rbenv () {
     ruby-build --version
 }
 
+# Run main function
 main "$@"; exit
