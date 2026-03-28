@@ -59,19 +59,21 @@ main () {
     
     echo
 
-    # Install latest ruby version using rbenv
-    echo "Installing ruby version 4.0.2 (Latest stable version as of March 2026)"
-    rbenv install 4.0.2
+    install_extra_dependencies
+
+    echo
+
+    install_ruby
     
     # Confirm installation
-    echo
     echo "Confirming that installation was a success..."
     rbenv versions
     echo
+
+    check_for_extra_dependencies
     
     # Exit and let the user of any other steps:
     echo "Ruby is now set-up on your machine!"
-    echo "Make sure to set a global version on your computer using 'rbenv global'"
     echo "For more information on rbenv, check here: https://github.com/rbenv/rbenv?tab=readme-ov-file"
 }
 
@@ -119,6 +121,7 @@ install_home_brew () {
 
     # Installing dependencies (linux)
     echo "Installing dependencies for Homebrew through apt-get..."
+    sudo apt update
     sudo apt-get install build-essential 
     echo
 
@@ -139,6 +142,57 @@ install_rbenv () {
     echo "Checking if rbenv and ruby-build are installed properly..."
     rbenv -v
     ruby-build --version
+}
+
+install_extra_dependencies () {
+    echo "Installing these dependencies: rustc libssl-dev libyaml-dev zlib1g-dev libgmp-dev"
+    sudo apt install rustc libssl-dev libyaml-dev zlib1g-dev libgmp-dev
+    echo
+}
+
+install_ruby () {
+    # Install latest ruby version using rbenv
+    echo "Installing ruby version 4.0.2 (Latest stable version as of March 2026)"
+    export RUBY_CONFIGURE_OPTS="--with-openssl-dir=/usr"
+    rbenv install 4.0.2
+    echo
+
+    switch_to_rbenv_ver
+
+    echo "Setting global ruby version..."
+    rbenv global 4.0.2
+
+    echo "Rehasing rbenv..."
+    rbenv rehash
+
+    echo "Checking correct ruby version is installed (should say 4.0.2)"
+    ruby -v
+    which ruby
+    echo
+}
+
+switch_to_rbenv_ver () {
+    # Switch ruby versions so that gems get installed to the 
+    # rbenv version, not the system version
+    echo "Setting rbenv global version as main ruby version..."
+    echo >> /home/kendrick/.bashrc
+    echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> /home/kendrick/.bashrc
+    echo 'eval "$(rbenv init - bash)"' >> /home/kendrick/.bashrc
+    export PATH="$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init - bash)"
+    echo
+}
+
+check_for_extra_dependencies () {
+    echo "Check for these extra dependencies: zlib1g-dev libssl-dev libreadline-dev libyaml-dev"
+    echo
+
+    ruby -rzlib -e "puts 'zlib OK'"
+    ruby -ropenssl -e "puts 'openssl OK'"
+    ruby -rreadline -e "puts 'readline OK'"
+    ruby -ryaml -e "puts 'yaml OK'"
+
+    echo
 }
 
 # Run main function
